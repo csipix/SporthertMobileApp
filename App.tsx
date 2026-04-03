@@ -7,6 +7,7 @@ import SajatView from './components/SajatView';
 import HubView from './components/HubView';
 import ClassSelector from './components/ClassSelector';
 import { ViewType } from './types';
+import { useModalHistory } from './hooks/useModalHistory';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>(ViewType.SAJAT);
@@ -16,10 +17,31 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('theme');
     return saved ? saved === 'dark' : true;
   });
+  const [isImmersive, setIsImmersive] = useState(false);
+
+  useModalHistory(showNotifications, () => setShowNotifications(false));
+
+  useEffect(() => {
+    if (activeView !== ViewType.AGAK) {
+      setIsImmersive(false);
+    }
+  }, [activeView]);
 
   useEffect(() => {
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-    document.body.style.backgroundColor = isDarkMode ? '#0d0d12' : '#f1f5f9';
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.style.backgroundColor = '#0d0d12';
+      document.documentElement.style.color = 'white';
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.style.backgroundColor = '#f1f5f9';
+      document.documentElement.style.color = '#0f172a';
+    }
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', isDarkMode ? '#0d0d12' : '#f1f5f9');
+    }
   }, [isDarkMode]);
 
   const handleClassSelect = (className: string) => {
@@ -37,61 +59,75 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (activeView) {
       case ViewType.AGAK:
-        return <AgakView isDarkMode={isDarkMode} />;
+        return (
+          <AgakView 
+            selectedClass={selectedClass || ''} 
+            onClose={() => setActiveView(ViewType.SAJAT)} 
+            onImmersiveChange={setIsImmersive}
+          />
+        );
       case ViewType.SAJAT:
-        return <SajatView selectedClass={selectedClass || ''} isDarkMode={isDarkMode} />;
+        return <SajatView selectedClass={selectedClass || ''} />;
       case ViewType.HUB:
-        return <HubView isDarkMode={isDarkMode} />;
+        return <HubView />;
       default:
-        return <SajatView selectedClass={selectedClass || ''} isDarkMode={isDarkMode} />;
+        return <SajatView selectedClass={selectedClass || ''} />;
     }
   };
 
   if (!selectedClass) {
-    return <ClassSelector onSelect={handleClassSelect} isDarkMode={isDarkMode} />;
+    return <ClassSelector onSelect={handleClassSelect} />;
   }
 
+  const isNoScroll = isImmersive || activeView === ViewType.HUB;
+
   return (
-    <div className={`h-screen flex flex-col max-w-2xl mx-auto transition-colors duration-500 ${isDarkMode ? 'bg-[#0d0d12] text-white' : 'bg-[#f1f5f9] text-slate-900'} selection:bg-orange-500/20 overflow-hidden`}>
-      <Header 
-        onClassChange={handleChangeClass} 
-        onNotificationsClick={() => setShowNotifications(true)}
-        isDarkMode={isDarkMode}
-        onToggleTheme={toggleTheme}
-      />
+    <div className="h-[100dvh] flex flex-col max-w-2xl mx-auto transition-colors duration-500 bg-[#f1f5f9] dark:bg-[#0d0d12] text-slate-900 dark:text-white selection:bg-orange-500/20 overflow-hidden">
+      {!isImmersive && (
+        <Header 
+          onClassChange={handleChangeClass} 
+          onNotificationsClick={() => {
+            window.history.pushState({ modal: 'notifications' }, '');
+            setShowNotifications(true);
+          }}
+          onToggleTheme={toggleTheme}
+        />
+      )}
       
-      <main className={`flex-grow relative px-4 pt-20 pb-20 no-scrollbar overflow-y-auto h-full flex flex-col ${activeView === ViewType.AGAK ? 'overflow-hidden' : ''}`}>
+      <main className="flex-grow relative p-0 h-full flex flex-col overflow-hidden">
         {renderView()}
       </main>
 
-      <Footer activeView={activeView} onViewChange={setActiveView} isDarkMode={isDarkMode} />
+      {!isImmersive && (
+        <Footer activeView={activeView} onViewChange={setActiveView} />
+      )}
 
       {/* Notifications Modal */}
       {showNotifications && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-4" onClick={() => setShowNotifications(false)}>
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-4" onClick={() => window.history.back()}>
           <div 
-            className={`${isDarkMode ? 'bg-[#16161d]' : 'bg-white'} w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-8 animate-slideUp border-t ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}
+            className="w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-8 animate-slideUp border bg-white dark:bg-[#16161d] border-slate-200 dark:border-white/10"
             onClick={e => e.stopPropagation()}
           >
-            <div className={`w-12 h-1.5 ${isDarkMode ? 'bg-gray-700' : 'bg-slate-200'} rounded-full mx-auto mb-6`}></div>
-            <h2 className={`text-2xl font-black mb-6 flex items-center gap-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+            <div className="w-12 h-1.5 bg-slate-200 dark:bg-gray-700 rounded-full mx-auto mb-6"></div>
+            <h2 className="text-2xl font-black mb-6 flex items-center gap-3 text-slate-900 dark:text-white">
               <i className="ph-fill ph-bell text-blue-500 text-3xl"></i>
               Értesítések
             </h2>
             <div className="space-y-4 py-4">
-              <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'} flex items-start gap-4`}>
+              <div className="p-4 rounded-2xl border bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 flex items-start gap-4">
                 <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5"></div>
                 <div>
-                  <p className={`text-sm font-bold ${isDarkMode ? 'text-gray-200' : 'text-slate-700'}`}>Sikeres regisztráció!</p>
-                  <p className={`text-[10px] ${isDarkMode ? 'text-gray-500' : 'text-slate-400'} mt-1 uppercase font-black`}>Ma • 08:30</p>
+                  <p className="text-sm font-bold text-slate-700 dark:text-gray-200">Sikeres regisztráció!</p>
+                  <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-1 uppercase font-black">Ma • 08:30</p>
                 </div>
               </div>
-              <div className={`text-center py-10 opacity-30 italic text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+              <div className="text-center py-10 opacity-30 italic text-sm text-slate-900 dark:text-white">
                 Nincs több értesítés...
               </div>
             </div>
             <button 
-              onClick={() => setShowNotifications(false)}
+              onClick={() => window.history.back()}
               className="mt-4 w-full py-4 bg-orange-500 text-white font-black rounded-2xl shadow-xl active:scale-95 transition-all uppercase tracking-widest"
             >
               BEZÁRÁS
@@ -109,6 +145,11 @@ const App: React.FC = () => {
           from { transform: translateY(100%); }
           to { transform: translateY(0); }
         }
+        @keyframes neon-pulse {
+          0%, 100% { filter: brightness(1); }
+          50% { filter: brightness(1.4); }
+        }
+        .animate-neon-pulse { animation: neon-pulse 2s infinite ease-in-out; }
         .animate-fadeIn { animation: fadeIn 0.2s ease-out forwards; }
         .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
       `}</style>

@@ -5,10 +5,9 @@ import { ViewType } from '../types';
 interface FooterProps {
   activeView: ViewType;
   onViewChange: (view: ViewType) => void;
-  isDarkMode: boolean;
 }
 
-const Footer: React.FC<FooterProps> = ({ activeView, onViewChange, isDarkMode }) => {
+const Footer: React.FC<FooterProps> = ({ activeView, onViewChange }) => {
   const tabs = [
     { id: ViewType.AGAK, label: 'Ágak', icon: 'ph-squares-four' },
     { id: ViewType.SAJAT, label: 'Saját', icon: 'ph-calendar-blank' },
@@ -16,7 +15,7 @@ const Footer: React.FC<FooterProps> = ({ activeView, onViewChange, isDarkMode })
   ];
 
   return (
-    <nav className={`fixed bottom-0 left-0 right-0 z-50 safe-bottom transition-colors duration-500 border-t ${isDarkMode ? 'bg-[#16161d] border-white/5' : 'bg-white border-slate-200'}`}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom transition-colors duration-500 border-t bg-white dark:bg-[#16161d] border-slate-200 dark:border-white/5">
       <div className="flex items-center justify-around h-16 max-w-2xl mx-auto px-4">
         {tabs.map((tab) => (
           <button
@@ -25,7 +24,7 @@ const Footer: React.FC<FooterProps> = ({ activeView, onViewChange, isDarkMode })
             className={`flex flex-col items-center justify-center gap-1 transition-all duration-300 w-16 relative ${
               activeView === tab.id 
                 ? 'text-blue-500' 
-                : (isDarkMode ? 'text-gray-500' : 'text-slate-400')
+                : 'text-slate-400 dark:text-gray-500'
             }`}
           >
             <i className={`ph-bold ${tab.icon} text-xl`}></i>

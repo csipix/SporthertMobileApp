@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "Match": {
+      "title": "Match",
+      "description": "A sports match with teams and scores.",
+      "type": "object",
+      "properties": {
+        "teamA": { "type": "string" },
+        "teamB": { "type": "string" },
+        "sport": { "type": "string" },
+        "scoreA": { "type": "number" },
+        "scoreB": { "type": "number" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "location": { "type": "string" },
+        "isFinished": { "type": "boolean" }
+      },
+      "required": ["teamA", "teamB", "sport", "startTime", "endTime", "location", "isFinished"]
+    },
+    "News": {
+      "title": "News",
+      "description": "A news item for the hub.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "createdAt"]
+    },
+    "Scorer": {
+      "title": "Scorer",
+      "description": "A top scorer in the competition.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "className": { "type": "string" },
+        "goals": { "type": "number" }
+      },
+      "required": ["name", "className", "goals"]
+    },
+    "FairPlayStatus": {
+      "title": "FairPlayStatus",
+      "description": "The status of the Fair Play competition or a class entry with points.",
+      "type": "object",
+      "properties": {
+        "isLocked": { "type": "boolean" },
+        "points": { "type": "number" },
+        "name": { "type": "string" },
+        "className": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/matches": {
+      "schema": "Match",
+      "description": "Collection of sports matches."
+    },
+    "/news": {
+      "schema": "News",
+      "description": "Collection of news items."
+    },
+    "/scorers": {
+      "schema": "Scorer",
+      "description": "Collection of top scorers."
+    },
+    "/fairplay": {
+      "schema": "FairPlayStatus",
+      "description": "Fair play competition status and candidates."
+    }
+  }
+}

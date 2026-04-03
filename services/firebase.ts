@@ -1,6 +1,7 @@
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAfdvRTqrzkn3Lo9VLxfYb84orf8sQakoM",
@@ -11,16 +12,18 @@ const firebaseConfig = {
   appId: "1:470513674034:web:90a32bde17237cfd89592b"
 };
 
-let db = null;
+let db: ReturnType<typeof getFirestore> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
 
 try {
   // Megpróbáljuk inicializálni a Firebase-t
   const app = initializeApp(firebaseConfig);
   db = getFirestore(app);
+  auth = getAuth(app);
   console.log("Firebase initialized successfully");
 } catch (error) {
   // Ha a konfiguráció hiányzik vagy hibás, a db null marad, de az app nem omlik össze
   console.error("Firebase initialization failed. Using local fallback data.", error);
 }
 
-export { db };
+export { db, auth };
