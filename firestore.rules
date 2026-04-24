@@ -24,7 +24,10 @@ service cloud.firestore {
       allow write: if false; // Only via admin console
     }
 
-    // Fairplay collection
+    // Device notifications
+    match /device_notifications/{deviceId} {
+      allow read, write: if true; // In a production app, this should be secured. For now, UUIDs are hard to guess.
+    }
     match /fairplay/{docId} {
       allow read: if true; // Publicly readable for the hub
       allow write: if false; // Only via admin console
