@@ -364,6 +364,23 @@ const HubView: React.FC = () => {
             <i className="ph ph-bold ph-scroll text-lg"></i>
             Házirend & Szabályzat
           </button>
+          
+          {/* Netlify Function Test Button */}
+          <button 
+            onClick={async () => {
+              try {
+                const res = await fetch('/.netlify/functions/test');
+                const data = await res.json();
+                alert(`Netlify Function response: ${JSON.stringify(data)}`);
+              } catch (e: any) {
+                alert(`Error calling function: ${e.message}`);
+              }
+            }}
+            className="w-full border font-black py-3 rounded-2xl active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 bg-white dark:bg-emerald-500/5 border-emerald-100 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-sm dark:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+          >
+            <i className="ph ph-bold ph-cloud text-lg"></i>
+            Teszt: Netlify Function
+          </button>
         </div>
       </div>
 
