@@ -116,10 +116,19 @@ export const handler = schedule("*/5 * * * *", async (event) => {
         const uniqueTokens = [...new Set(tokens)];
         
         // FCM multi-cast maximum 500 token lehet egyszerre
-        const payload = {
+        const payload: any = {
           notification: {
             title: `Hamarosan kezdődik: ${teamA} vs ${teamB}`,
             body: `Időpont: ${new Date(match.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | Helyszín: ${match.location || 'Sportpálya'}`,
+          },
+          webpush: {
+            notification: {
+              icon: '/pwa-192x192.png',
+              tag: `match-${matchId}` // Egyedi tag, hogy külön értesítésként jelenjenek meg
+            },
+            fcmOptions: {
+              link: 'https://sporthet.netlify.app' // Vagy bármilyen URL, amire a felhasználó érkezzen kattintáskor
+            }
           },
           tokens: uniqueTokens,
         };

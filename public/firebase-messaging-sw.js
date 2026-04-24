@@ -16,11 +16,16 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: '/pwa-192x192.png'
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  // Ha a payload-ban van 'notification' objektum, az FCM beépített kódja
+  // automatikusan megjeleníti az értesítést a háttérben.
+  // Csak akkor kell manuálisan megjelenítenünk, ha adat (data) alapú push-t kapunk
+  // notification objektum nélkül.
+  if (payload.data && !payload.notification) {
+    const notificationTitle = payload.data.title || 'Új értesítés';
+    const notificationOptions = {
+      body: payload.data.body,
+      icon: '/pwa-192x192.png'
+    };
+    self.registration.showNotification(notificationTitle, notificationOptions);
+  }
 });
