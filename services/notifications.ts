@@ -59,7 +59,8 @@ export const saveNotificationPreferences = async (prefs: NotificationPrefs): Pro
     
     if (messaging && 'Notification' in window && Notification.permission === 'granted') {
       try {
-        fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
       } catch (e) {
         console.error('Hiba az FCM token lekérésekor:', e);
       }
@@ -91,8 +92,15 @@ export const setupForegroundListener = () => {
         body: payload.notification?.body,
         icon: '/pwa-192x192.png'
       };
-      // Megjelenítjük a böngésző natív értesítését
-      new Notification(title, options);
+      
+      // Mobil böngészőkön (főleg Android Chrome) a sima `new Notification()` sokszor nem működik
+      // ha az app előtérben van, ezért a Service Worker-t használjuk az értesítés megjelenítésére
+      navigator.serviceWorker.ready.then(registration => {
+        registration.showNotification(title, options);
+      }).catch(err => {
+        console.error('Service worker notification hiba, fallback:', err);
+        new Notification(title, options);
+      });
     }
   });
 };

@@ -13,8 +13,7 @@
         "startTime": { "type": "string", "format": "date-time" },
         "endTime": { "type": "string", "format": "date-time" },
         "location": { "type": "string" },
-        "isFinished": { "type": "boolean" },
-        "notificationSent": { "type": "boolean", "default": false }
+        "isFinished": { "type": "boolean" }
       },
       "required": ["teamA", "teamB", "sport", "startTime", "endTime", "location", "isFinished"]
     },

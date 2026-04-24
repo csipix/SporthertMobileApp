@@ -59,7 +59,6 @@ export const handler = schedule("*/5 * * * *", async (event) => {
 
     const matchesToNotify = matchesSnapshot.docs.filter(doc => {
       const data = doc.data();
-      if (data.notificationSent) return false;
       if (!data.startTime) return false;
       
       // A startTime formátuma pl "2026-04-24T13:30". Ezt is úgy parse-oljuk, mint a lokális időt
@@ -85,6 +84,16 @@ export const handler = schedule("*/5 * * * *", async (event) => {
     const devices = devicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     for (const matchDoc of matchesToNotify) {
+      const matchId = matchDoc.id;
+      
+      // Ellenőrizzük, hogy küldtünk-e már erről a meccsről értesítést egy külön adatbázis táblában
+      const sentRef = db.collection('sent_notifications').doc(matchId);
+      const sentSnap = await sentRef.get();
+      if (sentSnap.exists) {
+        console.log(`Már kiment az értesítés erről a meccsről: ${matchId}`);
+        continue;
+      }
+
       const match = matchDoc.data();
       const teamA = match.teamA;
       const teamB = match.teamB;
@@ -118,8 +127,12 @@ export const handler = schedule("*/5 * * * *", async (event) => {
         console.log("Senki sem követi ezeket az osztályokat, nincs kinek küldeni.");
       }
 
-      // Megjelöljük a meccset, hogy már elküldtük az értesítést
-      await matchDoc.ref.update({ notificationSent: true });
+      // Feljegyezzük az új táblába, hogy erről a meccsről kiment az értesítés (így nem kell a matches-t módosítani)
+      await sentRef.set({ 
+        sentAt: new Date().toISOString(),
+        teamA, 
+        teamB 
+      });
     }
 
     return { statusCode: 200, body: "Sikeres lefutás" };
