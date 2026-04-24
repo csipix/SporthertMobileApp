@@ -112,13 +112,16 @@ export const handler = schedule("*/5 * * * *", async (event) => {
       }
 
       if (tokens.length > 0) {
+        // Kiszűrjük a duplikált tokeneket, hátha egy eszköz többször is regisztrálva van
+        const uniqueTokens = [...new Set(tokens)];
+        
         // FCM multi-cast maximum 500 token lehet egyszerre
         const payload = {
           notification: {
             title: `Hamarosan kezdődik: ${teamA} vs ${teamB}`,
             body: `Időpont: ${new Date(match.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | Helyszín: ${match.location || 'Sportpálya'}`,
           },
-          tokens: tokens,
+          tokens: uniqueTokens,
         };
 
         const response = await messaging.sendEachForMulticast(payload);

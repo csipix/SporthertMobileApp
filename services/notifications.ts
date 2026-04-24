@@ -82,9 +82,9 @@ export const saveNotificationPreferences = async (prefs: NotificationPrefs): Pro
 };
 
 export const setupForegroundListener = () => {
-  if (!messaging) return;
+  if (!messaging) return null;
   
-  onMessage(messaging, (payload) => {
+  return onMessage(messaging, (payload) => {
     console.log('Előtérben kapott értesítés: ', payload);
     if ('Notification' in window && Notification.permission === 'granted') {
       const title = payload.notification?.title || 'Új értesítés';

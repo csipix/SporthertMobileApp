@@ -26,7 +26,10 @@ const App: React.FC = () => {
   useModalHistory(showNotifications, () => setShowNotifications(false));
 
   useEffect(() => {
-    setupForegroundListener();
+    const unsubscribe = setupForegroundListener();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
