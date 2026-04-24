@@ -32,12 +32,21 @@ export const handler = schedule("*/5 * * * *", async (event) => {
 
   try {
     const now = new Date();
-    // 15 percen belüli meccseket keresünk, és 5 percenként futunk
-    const futureTime = new Date(now.getTime() + 15 * 60000); 
     
-    // Kikeressük azokat a meccseket, amik a következő 15 percben kezdődnek és még nem küldtünk róluk értesítést.
-    // Dátum formátum függ attól, hogy ISO stringként vagy Firestore Timestamp-ként mentjük.
-    // Feltételezzük, hogy ISO string, a blueprint alapján.
+    // Kiszámítjuk a jelenlegi időt Bukarest zónában, "YYYY-MM-DDTHH:mm:ss" formátumban
+    const formatter = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: 'Europe/Bucharest',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    // Kicseréljük a szóközt T-re, hogy a JS parser biztosan egyetértsen
+    const bucharestStr = formatter.format(now).replace(' ', 'T');
+    
+    // Ezzel egy olyan Date-et kapunk, ami az óramutatók állása szerint megegyezik a román idővel, mint UTC
+    const localNow = new Date(bucharestStr + 'Z'); 
+    const futureTime = new Date(localNow.getTime() + 15 * 60000); 
+    
+    console.log(`Jelenlegi román idő (UTC-ként interpretálva): ${localNow.toISOString()}`);
     
     const matchesSnapshot = await db.collection("matches")
       .where("isFinished", "==", false)
@@ -53,9 +62,14 @@ export const handler = schedule("*/5 * * * *", async (event) => {
       if (data.notificationSent) return false;
       if (!data.startTime) return false;
       
-      const startTime = new Date(data.startTime);
+      // A startTime formátuma pl "2026-04-24T13:30". Ezt is úgy parse-oljuk, mint a lokális időt
+      const startTimeStr = data.startTime.length === 16 ? data.startTime + ':00' : data.startTime;
+      const startTime = new Date(startTimeStr + 'Z');
+      
+      console.log(`Ellenőrzés: Meccs (${data.teamA} vs ${data.teamB}): ${startTimeStr} -> Idő: ${startTime.toISOString()}`);
+      
       // Ha a kezdési idő a jelen és a jövőbeli 15 perc közé esik
-      return startTime > now && startTime <= futureTime;
+      return startTime > localNow && startTime <= futureTime;
     });
 
     if (matchesToNotify.length === 0) {
