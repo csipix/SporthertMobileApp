@@ -11,6 +11,9 @@ export interface Match {
   scoreB: number | null;
   nextMatchId?: string;
   isFinished: boolean;
+  startTime?: string;
+  endTime?: string;
+  location?: string;
 }
 
 export interface PositionedNode {
