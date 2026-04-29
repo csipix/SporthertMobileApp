@@ -15,8 +15,8 @@ const Footer: React.FC<FooterProps> = ({ activeView, onViewChange }) => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-bottom transition-colors duration-500 border-t bg-white dark:bg-[#16161d] border-slate-200 dark:border-white/5">
-      <div className="flex items-center justify-around h-16 max-w-2xl mx-auto px-4">
+    <nav className="flex-shrink-0 relative w-full z-50 safe-bottom transition-colors duration-500 border-t bg-white dark:bg-[#16161d] border-slate-200 dark:border-white/5">
+      <div className="flex items-center justify-around h-16 sm:h-20 w-full px-4">
         {tabs.map((tab) => (
           <button
             key={tab.id}

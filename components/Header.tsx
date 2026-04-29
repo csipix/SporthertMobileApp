@@ -28,8 +28,8 @@ const Header: React.FC<HeaderProps> = ({ onClassChange, onNotificationsClick, on
   }, [isOpen]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[60] safe-top h-16 transition-colors duration-500 bg-white/90 dark:bg-[#0d0d12]/90 border-slate-200 dark:border-white/5 backdrop-blur-md border-b">
-      <div className="flex items-center justify-between px-6 h-full max-w-2xl mx-auto relative">
+    <header className="flex-shrink-0 relative z-[60] safe-top transition-colors duration-500 bg-white/90 dark:bg-[#0d0d12]/90 border-slate-200 dark:border-white/5 backdrop-blur-md border-b">
+      <div className="flex items-center justify-between px-6 h-16 sm:h-20 w-full relative">
         
         {/* Bal oldal: Logo */}
         <div className="flex-1 flex items-center">

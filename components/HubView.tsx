@@ -234,7 +234,7 @@ const HubView: React.FC = () => {
   }, [allMatches, currentTime]);
 
   return (
-    <div className="animate-fadeIn h-full flex flex-col pt-[72px] pb-[72px] px-4 overflow-hidden">
+    <div className="animate-fadeIn h-full flex flex-col py-6 px-4 overflow-hidden">
       <div className="flex-grow flex flex-col justify-evenly py-2">
         {/* 1. News Section */}
         {news.length > 0 && (
@@ -386,7 +386,7 @@ const HubView: React.FC = () => {
 
       {/* Gólkirály Modal */}
       {showGolkiraly && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center px-4 pb-[84px] pt-[80px]" onClick={() => window.history.back()}>
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center px-4 py-6 safe-top safe-bottom" onClick={() => window.history.back()}>
           <div 
             className="w-full max-w-md rounded-[2.5rem] p-8 animate-slideUp border bg-white dark:bg-[#16161d] border-slate-200 dark:border-white/10 shadow-2xl max-h-full overflow-hidden flex flex-col"
             onClick={e => e.stopPropagation()}
@@ -457,7 +457,7 @@ const HubView: React.FC = () => {
 
       {/* Fair play Modal */}
       {showFairPlay && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center px-4 pb-[84px] pt-[80px]" onClick={() => window.history.back()}>
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center px-4 py-6 safe-top safe-bottom" onClick={() => window.history.back()}>
           <div 
             className="w-full max-w-md rounded-[2.5rem] p-8 animate-slideUp border bg-white dark:bg-[#16161d] border-slate-200 dark:border-white/10 shadow-2xl max-h-full overflow-hidden flex flex-col"
             onClick={e => e.stopPropagation()}

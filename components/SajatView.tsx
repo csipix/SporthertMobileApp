@@ -140,7 +140,7 @@ const SajatView: React.FC<SajatViewProps> = ({ selectedClass }) => {
         </span>
       </div>
 
-      <div className="animate-fadeIn pt-[72px] pb-[72px] px-4 h-full overflow-y-auto no-scrollbar relative z-10">
+      <div className="animate-fadeIn py-6 px-4 h-full overflow-y-auto no-scrollbar relative z-10">
         <div className="mb-8 relative z-20">
           <div className="flex justify-between items-center gap-2">
             {DAYS.map((day) => (

@@ -102,7 +102,7 @@ const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersive
   // Sportágválasztó menü
   if (!selectedSport) {
     return (
-      <div className="animate-fadeIn px-5 pt-[72px] pb-[72px] h-full flex flex-col relative overflow-y-auto no-scrollbar">
+      <div className="animate-fadeIn px-5 py-6 h-full flex flex-col relative overflow-y-auto no-scrollbar">
         {loading ? (
           <div className="flex-grow flex flex-col items-center justify-center gap-4">
             <div className="w-10 h-10 border-4 border-t-blue-500 rounded-full animate-spin border-slate-200 dark:border-white/10"></div>
@@ -198,7 +198,7 @@ const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersive
 
       {/* Csoportkör Nézet */}
       {selectedSport?.toLowerCase() === 'foci' && activeTab === 'groups' && (
-        <div className="absolute inset-0 z-[60] bg-slate-50 dark:bg-[#0d0d12] overflow-y-auto no-scrollbar pt-24 pb-24 px-4 animate-fadeIn">
+        <div className="absolute inset-0 z-[60] bg-slate-50 dark:bg-[#0d0d12] overflow-y-auto no-scrollbar py-6 px-4 animate-fadeIn">
           <div className="max-w-md mx-auto space-y-6">
             {groups.length > 0 ? groups.map(group => (
               <div key={group.name} className="space-y-3">

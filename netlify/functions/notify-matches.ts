@@ -86,11 +86,13 @@ export const handler = schedule("*/5 * * * *", async (event) => {
     for (const matchDoc of matchesToNotify) {
       const matchId = matchDoc.id;
       
-      // Ellenőrizzük, hogy küldtünk-e már erről a meccsről értesítést egy külön adatbázis táblában
-      const sentRef = db.collection('sent_notifications').doc(matchId);
+      const sentId = `${matchId}_${match.startTime}`;
+      
+      // Ellenőrizzük, hogy küldtünk-e már erről a meccsről értesítést (adott kezdési időponttal)
+      const sentRef = db.collection('sent_notifications').doc(sentId);
       const sentSnap = await sentRef.get();
       if (sentSnap.exists) {
-        console.log(`Már kiment az értesítés erről a meccsről: ${matchId}`);
+        console.log(`Már kiment az értesítés erről a meccsről (időpont: ${match.startTime}): ${matchId}`);
         continue;
       }
 
@@ -124,7 +126,7 @@ export const handler = schedule("*/5 * * * *", async (event) => {
           webpush: {
             notification: {
               icon: '/pwa-192x192.png',
-              tag: `match-${matchId}` // Egyedi tag, hogy külön értesítésként jelenjenek meg
+              tag: `match-${matchId}-${Date.now()}` // Egyedi tag, hogy külön értesítésként jelenjenek meg
             },
             fcmOptions: {
               link: 'https://sporthet.netlify.app' // Vagy bármilyen URL, amire a felhasználó érkezzen kattintáskor
