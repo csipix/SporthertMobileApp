@@ -22,7 +22,7 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 const messaging = admin.messaging();
 
-export const handler = schedule("*/5 * * * *", async (event) => {
+export const handler = schedule("*/15 * * * *", async (event) => {
   console.log("Értesítés küldő funkció elindult...");
   
   if (!admin.apps.length) {
@@ -44,47 +44,29 @@ export const handler = schedule("*/5 * * * *", async (event) => {
     
     // Ezzel egy olyan Date-et kapunk, ami az óramutatók állása szerint megegyezik a román idővel, mint UTC
     const localNow = new Date(bucharestStr + 'Z'); 
-    const futureTime = new Date(localNow.getTime() + 15 * 60000); 
+    const futureTime = new Date(localNow.getTime() + 25 * 60000); 
     
-    console.log(`Jelenlegi román idő (UTC-ként interpretálva): ${localNow.toISOString()}`);
+    const localNowStr = bucharestStr.substring(0, 16);
+    const futureTimeStr = futureTime.toISOString().substring(0, 16);
+    
+    console.log(`Keresés időablak: ${localNowStr} - ${futureTimeStr}`);
     
     const matchesSnapshot = await db.collection("matches")
       .where("isFinished", "==", false)
+      .where("startTime", ">", localNowStr)
+      .where("startTime", "<=", futureTimeStr)
       .get();
       
     if (matchesSnapshot.empty) {
-      console.log("Nincs hamarosan kezdődő meccs, amiről nem ment ki értesítés.");
+      console.log("Nincs a következő 25 percben kezdődő meccs.");
       return { statusCode: 200 };
     }
 
-    const matchesToNotify = matchesSnapshot.docs.filter(doc => {
-      const data = doc.data();
-      if (!data.startTime) return false;
-      
-      // A startTime formátuma pl "2026-04-24T13:30". Ezt is úgy parse-oljuk, mint a lokális időt
-      const startTimeStr = data.startTime.length === 16 ? data.startTime + ':00' : data.startTime;
-      const startTime = new Date(startTimeStr + 'Z');
-      
-      console.log(`Ellenőrzés: Meccs (${data.teamA} vs ${data.teamB}): ${startTimeStr} -> Idő: ${startTime.toISOString()}`);
-      
-      // Ha a kezdési idő a jelen és a jövőbeli 15 perc közé esik
-      return startTime > localNow && startTime <= futureTime;
-    });
-
-    if (matchesToNotify.length === 0) {
-      console.log("Nincs a következő 15 percben kezdődő meccs.");
-      return { statusCode: 200 };
-    }
-
-    // Lekérjük az összes feliratkozót
-    const devicesSnapshot = await db.collection("device_notifications")
-      .where("classMatch", "==", true)
-      .get();
-      
-    const devices = devicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const matchesToNotify = matchesSnapshot.docs;
 
     for (const matchDoc of matchesToNotify) {
       const matchId = matchDoc.id;
+      const match = matchDoc.data();
       
       const sentId = `${matchId}_${match.startTime}`;
       
@@ -96,19 +78,33 @@ export const handler = schedule("*/5 * * * *", async (event) => {
         continue;
       }
 
-      const match = matchDoc.data();
       const teamA = match.teamA;
       const teamB = match.teamB;
       
       console.log(`Értesítés küldése: ${teamA} vs ${teamB}`);
 
-      // Keressük meg a releváns tokeneket
-      const tokens: string[] = [];
-      for (const device of devices) {
-        if (!device.fcmToken) continue;
+      // Csak azokat az eszközöket kérdezzük le, amelyek valamelyik érintett csapatot követik
+      const devicesASnap = await db.collection("device_notifications")
+        .where("targetClasses", "array-contains", teamA)
+        .get();
         
-        const targetClasses = device.targetClasses || [];
-        if (targetClasses.includes(teamA) || targetClasses.includes(teamB)) {
+      const devicesBSnap = await db.collection("device_notifications")
+        .where("targetClasses", "array-contains", teamB)
+        .get();
+
+      // Összesítjük és duplikáció szűrjük az eszközöket
+      const allTargetDevices = [...devicesASnap.docs, ...devicesBSnap.docs];
+      const tokens: string[] = [];
+      const seenDevices = new Set<string>();
+
+      for (const deviceDoc of allTargetDevices) {
+        if (seenDevices.has(deviceDoc.id)) continue;
+        seenDevices.add(deviceDoc.id);
+
+        const device = deviceDoc.data();
+        
+        // Ellenőrizzük, hogy a classMatch be van-e kapcsolva
+        if (device.classMatch && device.fcmToken) {
           tokens.push(device.fcmToken);
         }
       }
