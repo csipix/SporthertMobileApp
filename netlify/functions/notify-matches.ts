@@ -111,13 +111,21 @@ export const handler = schedule("*/15 * * * *", async (event) => {
 
       if (tokens.length > 0) {
         // Kiszűrjük a duplikált tokeneket, hátha egy eszköz többször is regisztrálva van
-        const uniqueTokens = [...new Set(tokens)];
+        const uniqueTokens = Array.from(new Set(tokens));
         
         // FCM multi-cast maximum 500 token lehet egyszerre
         const payload: any = {
           notification: {
             title: `Hamarosan kezdődik: ${teamA} vs ${teamB}`,
             body: `Időpont: ${new Date(match.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} | Helyszín: ${match.location || 'Sportpálya'}`,
+          },
+          android: {
+            priority: 'high'
+          },
+          apns: {
+            headers: {
+              'apns-priority': '10'
+            }
           },
           webpush: {
             notification: {
@@ -133,6 +141,37 @@ export const handler = schedule("*/15 * * * *", async (event) => {
 
         const response = await messaging.sendEachForMulticast(payload);
         console.log(`${response.successCount} értesítés sikeresen elküldve, ${response.failureCount} hiba.`);
+        
+        if (response.failureCount > 0) {
+          const failedTokens: string[] = [];
+          response.responses.forEach((resp, idx) => {
+            if (!resp.success) {
+              const errorCode = resp.error?.code;
+              if (
+                errorCode === 'messaging/registration-token-not-registered' ||
+                errorCode === 'messaging/invalid-argument'
+              ) {
+                failedTokens.push(uniqueTokens[idx]);
+              }
+            }
+          });
+
+          if (failedTokens.length > 0) {
+            console.log(`Törlendő érvénytelen tokenek száma: ${failedTokens.length}`);
+            const batch = db.batch();
+            // Maximum 30 item allowed in 'in' queries, so handle chunks just in case
+            const chunkSize = 30;
+            for (let i = 0; i < failedTokens.length; i += chunkSize) {
+              const chunk = failedTokens.slice(i, i + chunkSize);
+              const snapshot = await db.collection("device_notifications").where("fcmToken", "in", chunk).get();
+              snapshot.forEach(doc => {
+                batch.delete(doc.ref);
+              });
+            }
+            await batch.commit();
+            console.log("Érvénytelen tokenek eltávolítva az adatbázisból.");
+          }
+        }
       } else {
         console.log("Senki sem követi ezeket az osztályokat, nincs kinek küldeni.");
       }
