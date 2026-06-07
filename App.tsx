@@ -268,8 +268,11 @@ const App: React.FC = () => {
               </label>
             </div>
             
-            <div className="text-center py-6 opacity-30 italic text-sm text-slate-900 dark:text-white">
-              Saját értesítések története jön ide...
+            <div className="mt-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-sm flex gap-3 text-left items-center">
+              <i className="ph ph-warning-circle text-xl shrink-0"></i>
+              <div>
+                <span className="font-bold">Béta funkció:</span> Az értesítési rendszer még tesztelés alatt áll, így a pontos kézbesítés egyelőre nem garantált.
+              </div>
             </div>
             
             <button 
