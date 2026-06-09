@@ -198,7 +198,7 @@ const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersive
 
       {/* Csoportkör Nézet */}
       {selectedSport?.toLowerCase() === 'foci' && activeTab === 'groups' && (
-        <div className="absolute inset-0 z-[60] bg-slate-50 dark:bg-[#0d0d12] overflow-y-auto no-scrollbar py-6 px-4 animate-fadeIn">
+        <div className="absolute inset-0 z-[60] bg-slate-50 dark:bg-[#0d0d12] overflow-y-auto no-scrollbar pt-24 pb-8 px-4 animate-fadeIn">
           <div className="max-w-md mx-auto space-y-6">
             {groups.length > 0 ? groups.map(group => (
               <div key={group.name} className="space-y-3">
