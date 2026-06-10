@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { db } from '../services/firebase';
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
-import { getSportIcon } from './SajatView';
+import { getSportIcon } from '../utils/sportConfig';
 import { useModalHistory } from '../hooks/useModalHistory';
 import { handleFirestoreError, OperationType } from '../utils/errorHandler';
 

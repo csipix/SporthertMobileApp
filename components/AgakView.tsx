@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/firebase';
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { getSportIcon } from './SajatView';
+import { getSportIcon, generateSportColorMap } from '../utils/sportConfig';
 import { useBracketLayout, Match } from '../hooks/useBracketLayout';
 import BracketViewport from './agak/BracketViewport';
 import { useModalHistory } from '../hooks/useModalHistory';
@@ -13,11 +13,6 @@ interface AgakViewProps {
   onClose: () => void;
   onImmersiveChange?: (isImmersive: boolean) => void;
 }
-
-const NEON_PALETTE = [
-  "#f97316", "#3b82f6", "#22c55e", "#a855f7", "#06b6d4", "#ef4444", 
-  "#eab308", "#ec4899", "#6366f1", "#84cc16", "#14b8a6", "#f43f5e"
-];
 
 const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersiveChange }) => {
   const [sports, setSports] = useState<string[]>([]);
@@ -95,8 +90,10 @@ const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersive
   // 3. Layout Engine futtatása
   const { nodes, edges, bounds } = useBracketLayout(bracketMatches);
 
+  const sportColorMap = React.useMemo(() => generateSportColorMap(sports), [sports]);
+
   const currentSportColor = selectedSport 
-    ? NEON_PALETTE[sports.indexOf(selectedSport) % NEON_PALETTE.length] 
+    ? sportColorMap[selectedSport] || "#ffffff" 
     : "#ffffff";
 
   // Sportágválasztó menü
@@ -124,8 +121,8 @@ const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersive
                   <div 
                     className="aspect-square w-full max-w-[80px] sm:max-w-[90px] rounded-[2rem] border-2 flex items-center justify-center text-4xl sm:text-5xl transition-all active:scale-90 shadow-2xl bg-white dark:bg-[#16161d] border-slate-100 dark:border-white/5"
                     style={{ 
-                      color: NEON_PALETTE[idx % NEON_PALETTE.length], 
-                      borderColor: `${NEON_PALETTE[idx % NEON_PALETTE.length]}44` 
+                      color: sportColorMap[sport], 
+                      borderColor: `${sportColorMap[sport]}44` 
                     }}
                   >
                     <i className={`ph-fill ${getSportIcon(sport)}`}></i>

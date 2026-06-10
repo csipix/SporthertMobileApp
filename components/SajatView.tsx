@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../services/firebase';
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { handleFirestoreError, OperationType } from '../utils/errorHandler';
+import { getSportIcon, generateSportColorMap } from '../utils/sportConfig';
 
 interface MatchItem {
   id: string;
@@ -22,11 +23,6 @@ interface SajatViewProps {
   selectedClass: string;
 }
 
-const NEON_PALETTE = [
-  "#f97316", "#3b82f6", "#22c55e", "#a855f7", "#06b6d4", "#ef4444", 
-  "#eab308", "#ec4899", "#6366f1", "#84cc16", "#14b8a6", "#f43f5e"
-];
-
 const DAYS = [
   { label: 'Hét', full: 'Hétfő', index: 1 },
   { label: 'Ked', full: 'Kedd', index: 2 },
@@ -34,24 +30,6 @@ const DAYS = [
   { label: 'Csü', full: 'Csütörtök', index: 4 },
   { label: 'Pén', full: 'Péntek', index: 5 },
 ];
-
-export const getSportIcon = (sport: string) => {
-  if (!sport) return 'ph-trophy';
-  const s = sport.toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-
-  if (s.includes('foci') || s.includes('labdar') || s.includes('labtenisz')) return 'ph-soccer-ball';
-  if (s.includes('kosar')) return 'ph-basketball';
-  if (s.includes('rop') || s.includes('volleyball')) return 'ph-volleyball';
-  if (s.includes('tenisz') && !s.includes('ping') && !s.includes('asztali')) return 'ph-tennis-ball';
-  if (s.includes('ping') || s.includes('asztali')) return 'ph-ping-pong';
-  if (s.includes('meta')) return 'ph-baseball';
-  if (s.includes('usz') || s.includes('waves')) return 'ph-waves';
-  if (s.includes('fut') || s.includes('atletika')) return 'ph-sneaker-move';
-  if (s.includes('bicikli') || s.includes('kerekpar')) return 'ph-bicycle';
-  return 'ph-trophy';
-};
 
 const formatTime = (isoString: string) => {
   try {
@@ -101,11 +79,7 @@ const SajatView: React.FC<SajatViewProps> = ({ selectedClass }) => {
 
   const sportColorMap = useMemo(() => {
     const uniqueSports = Array.from(new Set(matches.map(m => m.sport)));
-    const map: Record<string, string> = {};
-    uniqueSports.forEach((sport, index) => {
-      map[sport as string] = NEON_PALETTE[index % NEON_PALETTE.length];
-    });
-    return map;
+    return generateSportColorMap(uniqueSports);
   }, [matches]);
 
   const filteredMatches = useMemo(() => {

@@ -38,7 +38,21 @@ const BracketNode: React.FC<BracketNodeProps> = ({ x, y, data, color, selectedCl
           <span className="text-[13px] font-black uppercase tracking-widest truncate pr-2 text-slate-500 dark:text-white/40">
             {data.round}
           </span>
-          {data.isFinished && <i className="ph-fill ph-check-circle text-green-500 text-base"></i>}
+          <div className="flex items-center gap-2">
+            {data.startTime && (
+              <span className="text-[11px] font-bold text-slate-400 dark:text-white/30 flex items-center gap-1">
+                <i className="ph ph-clock"></i>
+                {(() => {
+                  const d = new Date(data.startTime);
+                  const days = ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'];
+                  const dayStr = days[d.getDay()];
+                  const timeStr = d.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+                  return `${dayStr} ${timeStr}`;
+                })()}
+              </span>
+            )}
+            {data.isFinished && <i className="ph-fill ph-check-circle text-green-500 text-base"></i>}
+          </div>
         </div>
         
         {/* Teams Section */}
