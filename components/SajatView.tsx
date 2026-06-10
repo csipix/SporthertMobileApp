@@ -1,23 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { db } from '../services/firebase';
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
-import { handleFirestoreError, OperationType } from '../utils/errorHandler';
 import { getSportIcon, generateSportColorMap } from '../utils/sportConfig';
-
-interface MatchItem {
-  id: string;
-  sport: string;
-  round: string;
-  teamA: string;
-  teamB: string;
-  scoreA: number | null;
-  scoreB: number | null;
-  location: string;
-  startTime: string; 
-  endTime: string;
-  isFinished: boolean;
-}
+import { useMatches, MatchItem } from '../contexts/MatchesContext';
 
 interface SajatViewProps {
   selectedClass: string;
@@ -41,8 +25,7 @@ const formatTime = (isoString: string) => {
 };
 
 const SajatView: React.FC<SajatViewProps> = ({ selectedClass }) => {
-  const [matches, setMatches] = useState<MatchItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { matches, loading } = useMatches();
   const [currentTime, setCurrentTime] = useState(new Date());
   
   const [selectedDayIndex, setSelectedDayIndex] = useState<number>(() => {
@@ -53,28 +36,6 @@ const SajatView: React.FC<SajatViewProps> = ({ selectedClass }) => {
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!db) {
-      setLoading(false);
-      return;
-    }
-
-    const q = query(collection(db, "matches"), orderBy("startTime", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as MatchItem[];
-      setMatches(items);
-      setLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'matches');
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
   }, []);
 
   const sportColorMap = useMemo(() => {
@@ -106,9 +67,9 @@ const SajatView: React.FC<SajatViewProps> = ({ selectedClass }) => {
 
   return (
     <>
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden select-none">
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
         <span 
-          className="font-black text-[48vw] rotate-[-15deg] tracking-tighter italic transition-all duration-700 text-[#0ea5e9] opacity-[0.08] dark:text-[#00f5ff] dark:opacity-[0.2] blur-[0px] dark:blur-[1px] [text-shadow:none] dark:[text-shadow:0_0_20px_rgba(0,245,255,0.9),0_0_50px_rgba(0,245,255,0.5)]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black whitespace-nowrap text-[48vw] lg:text-[25rem] rotate-[-15deg] tracking-tighter mr-[0.05em] italic transition-all duration-700 text-[#0ea5e9] opacity-[0.08] dark:text-[#00f5ff] dark:opacity-[0.2] blur-[0px] dark:blur-[1px] [text-shadow:none] dark:[text-shadow:0_0_20px_rgba(0,245,255,0.9),0_0_50px_rgba(0,245,255,0.5)]"
         >
           {selectedClass}
         </span>

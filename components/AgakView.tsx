@@ -1,12 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { db } from '../services/firebase';
-import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { getSportIcon, generateSportColorMap } from '../utils/sportConfig';
 import { useBracketLayout, Match } from '../hooks/useBracketLayout';
 import BracketViewport from './agak/BracketViewport';
 import { useModalHistory } from '../hooks/useModalHistory';
-import { handleFirestoreError, OperationType } from '../utils/errorHandler';
+import { useMatches } from '../contexts/MatchesContext';
 
 interface AgakViewProps {
   selectedClass: string;
@@ -15,11 +13,19 @@ interface AgakViewProps {
 }
 
 const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersiveChange }) => {
-  const [sports, setSports] = useState<string[]>([]);
+  const { matches: allMatches, loading } = useMatches();
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'groups' | 'bracket'>('groups');
+
+  const sports = React.useMemo(() => {
+    const allSports = allMatches.map(m => m.sport);
+    return Array.from(new Set(allSports)).sort();
+  }, [allMatches]);
+
+  const matches = React.useMemo(() => {
+    if (!selectedSport) return [];
+    return allMatches.filter(m => m.sport === selectedSport);
+  }, [allMatches, selectedSport]);
 
   // Értesítjük az App-ot, ha immersive módba lépünk (választottunk sportot)
   useEffect(() => {
@@ -27,35 +33,6 @@ const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersive
   }, [selectedSport, onImmersiveChange]);
 
   useModalHistory(!!selectedSport, () => setSelectedSport(null));
-
-  // 1. Sportágak listájának lekérése
-  useEffect(() => {
-    const q = query(collection(db, "matches"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const allSports: string[] = snapshot.docs.map(doc => doc.data().sport as string);
-      setSports(Array.from(new Set(allSports)).sort());
-      setLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'matches');
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // 2. Kiválasztott sportág meccseinek lekérése
-  useEffect(() => {
-    if (!selectedSport) {
-      setMatches([]);
-      return;
-    }
-    setLoading(true);
-    const q = query(collection(db, "matches"), where("sport", "==", selectedSport));
-    return onSnapshot(q, (snapshot) => {
-      setMatches(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Match)));
-      setLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, `matches?sport=${selectedSport}`);
-    });
-  }, [selectedSport]);
 
   const groupMatches = React.useMemo(() => matches.filter(m => m.round.toLowerCase().includes('csoport')), [matches]);
   const bracketMatches = React.useMemo(() => matches.filter(m => !m.round.toLowerCase().includes('csoport')), [matches]);

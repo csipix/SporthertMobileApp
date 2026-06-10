@@ -1,6 +1,6 @@
 
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getMessaging } from "firebase/messaging";
 
@@ -20,7 +20,17 @@ let messaging: ReturnType<typeof getMessaging> | null = null;
 try {
   // Megpróbáljuk inicializálni a Firebase-t
   const app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
+  
+  try {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
+    });
+  } catch (e) {
+    db = getFirestore(app);
+  }
+  
   auth = getAuth(app);
   
   // Csak akkor inicializáljuk a messaginget, ha böngészőben vagyunk

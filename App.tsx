@@ -1,5 +1,5 @@
 
-// Trigger a new git commit
+// SajatView text alignment fixed
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -10,6 +10,8 @@ import ClassSelector from './components/ClassSelector';
 import { ViewType } from './types';
 import { useModalHistory } from './hooks/useModalHistory';
 import { getNotificationPreferences, saveNotificationPreferences, setupForegroundListener } from './services/notifications';
+
+import { MatchesProvider } from './contexts/MatchesContext';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>(ViewType.SAJAT);
@@ -169,6 +171,7 @@ const App: React.FC = () => {
   const isNoScroll = isImmersive || activeView === ViewType.HUB;
 
   return (
+    <MatchesProvider>
     <div className="h-[100dvh] flex flex-col max-w-2xl mx-auto transition-colors duration-500 bg-[#f1f5f9] dark:bg-[#0d0d12] text-slate-900 dark:text-white selection:bg-orange-500/20 overflow-hidden">
       {!isImmersive && (
         <Header 
@@ -311,6 +314,7 @@ const App: React.FC = () => {
         .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
       `}</style>
     </div>
+    </MatchesProvider>
   );
 };
 

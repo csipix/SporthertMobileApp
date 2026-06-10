@@ -5,6 +5,7 @@ import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestor
 import { getSportIcon } from '../utils/sportConfig';
 import { useModalHistory } from '../hooks/useModalHistory';
 import { handleFirestoreError, OperationType } from '../utils/errorHandler';
+import { useMatches } from '../contexts/MatchesContext';
 
 interface LiveMatch {
   id: string;
@@ -49,10 +50,9 @@ interface WeatherData {
 }
 
 const HubView: React.FC = () => {
-  const [allMatches, setAllMatches] = useState<LiveMatch[]>([]);
+  const { matches: allMatches, loading: loadingMatches } = useMatches();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [loadingMatches, setLoadingMatches] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showGolkiraly, setShowGolkiraly] = useState(false);
   const [showFairPlay, setShowFairPlay] = useState(false);
@@ -136,28 +136,6 @@ const HubView: React.FC = () => {
       handleFirestoreError(error, OperationType.GET, 'news');
       setNews([{ id: 'default', title: 'Hiba', content: 'Nem sikerült betölteni a híreket.', createdAt: '', expiresAt: '' }]);
     });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!db) {
-      setLoadingMatches(false);
-      return;
-    }
-
-    const q = query(collection(db, "matches"), orderBy("startTime", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const matches = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as LiveMatch[];
-      setAllMatches(matches);
-      setLoadingMatches(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'matches');
-      setLoadingMatches(false);
-    });
-
     return () => unsubscribe();
   }, []);
 
