@@ -1,6 +1,5 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { LOGO_BASE64 } from '../constants';
 import { useModalHistory } from '../hooks/useModalHistory';
 
 interface HeaderProps {
@@ -33,11 +32,18 @@ const Header: React.FC<HeaderProps> = ({ onClassChange, onNotificationsClick, on
         
         {/* Bal oldal: Logo */}
         <div className="flex-1 flex items-center">
-          <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center transition-all ring-1 bg-white dark:bg-[#afde33] ring-slate-100 dark:ring-white/20 shadow-sm dark:shadow-[0_0_15px_rgba(175,222,51,0.4)]">
+          <div className="w-8 h-8 flex items-center justify-center transition-all">
+             {/* Light mode logo */}
              <img 
-               src={LOGO_BASE64} 
+               src="/lightbagoly.png" 
                alt="Logo" 
-               className="w-full h-full object-cover scale-110"
+               className="w-full h-full object-contain block dark:hidden"
+             />
+             {/* Dark mode logo */}
+             <img 
+               src="/feherbagoly.png" 
+               alt="Logo" 
+               className="w-full h-full object-contain hidden dark:block"
              />
           </div>
         </div>
