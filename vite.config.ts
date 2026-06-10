@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
         tailwindcss(),
         VitePWA({
           registerType: 'autoUpdate',
-          includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+          includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'lightbagoly.png', 'feherbagoly.png'],
           manifest: {
             name: 'Sporthét',
             short_name: 'Sporthét',

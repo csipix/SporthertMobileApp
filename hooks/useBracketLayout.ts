@@ -71,7 +71,12 @@ export const useBracketLayout = (matches: Match[]) => {
       return d;
     };
 
-    const finalMatch = matches.find(m => m.round.toLowerCase().includes('döntő') && !m.round.toLowerCase().includes('bronz')) || matches[0];
+    // A "döntő" részszó az Elődöntő/Negyeddöntő/Nyolcaddöntő nevekben is benne van,
+    // ezért pontos egyezést keresünk, tartalékként pedig a fa gyökerét (nincs nextMatchId).
+    const finalMatch =
+      matches.find(m => m.round.toLowerCase().trim() === 'döntő') ||
+      matches.find(m => !m.nextMatchId && !m.round.toLowerCase().includes('bronz')) ||
+      matches[0];
     const maxDepth = getDepth(finalMatch.id);
     
     const nodes: PositionedNode[] = [];
