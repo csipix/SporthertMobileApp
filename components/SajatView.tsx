@@ -69,7 +69,7 @@ const SajatView: React.FC<SajatViewProps> = ({ selectedClass }) => {
     <>
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none">
         <span 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black whitespace-nowrap text-[48vw] lg:text-[25rem] rotate-[-15deg] tracking-tighter mr-[0.05em] italic transition-all duration-700 text-[#0ea5e9] opacity-[0.08] dark:text-[#00f5ff] dark:opacity-[0.2] blur-[0px] dark:blur-[1px] [text-shadow:none] dark:[text-shadow:0_0_20px_rgba(0,245,255,0.9),0_0_50px_rgba(0,245,255,0.5)]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black whitespace-nowrap text-[48vw] lg:text-[25rem] rotate-[-15deg] tracking-tighter pr-[0.05em] italic transition-all duration-700 text-[#0ea5e9] opacity-[0.08] dark:text-[#00f5ff] dark:opacity-[0.2] blur-[0px] dark:blur-[1px] [text-shadow:none] dark:[text-shadow:0_0_20px_rgba(0,245,255,0.9),0_0_50px_rgba(0,245,255,0.5)]"
         >
           {selectedClass}
         </span>
