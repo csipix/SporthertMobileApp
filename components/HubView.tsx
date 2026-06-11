@@ -82,17 +82,22 @@ const HubView: React.FC = () => {
   // Fetch Weather (15 perces cache-sel, lásd services/weather.ts)
   useEffect(() => {
     let cancelled = false;
-    fetchWeather().then(data => {
-      if (cancelled) return;
-      if (data) {
-        setWeather(data);
-        setWeatherFailed(false);
-      } else if (!getCachedWeather()) {
-        // se friss adat, se korábbi cache — ne pörögjön örökké a spinner
-        setWeatherFailed(true);
-      }
-    });
-    return () => { cancelled = true; };
+    const load = () => {
+      fetchWeather().then(data => {
+        if (cancelled) return;
+        if (data) {
+          setWeather(data);
+          setWeatherFailed(false);
+        } else if (!getCachedWeather()) {
+          // se friss adat, se korábbi cache — ne pörögjön örökké a spinner
+          setWeatherFailed(true);
+        }
+      });
+    };
+    load();
+    // percenként újrapróbálkozás; friss cache esetén hálózati kérés nélkül tér vissza
+    const timer = window.setInterval(load, 60000);
+    return () => { cancelled = true; clearInterval(timer); };
   }, []);
 
   // Fetch News from Firebase

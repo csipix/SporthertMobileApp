@@ -6,13 +6,13 @@ export interface WeatherData {
 
 const CACHE_KEY = 'sporthet_weather_cache';
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 perc — ennyi időn belül nem kérdezzük újra az API-t
-// Az Open-Meteo terhelt időszakban 10-12 mp alatt válaszol — a timeout legyen e fölött,
-// különben degradált API mellett sosem sikerülne a lekérés. A cache miatt ez a várakozás
-// legfeljebb 15 percenként egyszer, jellemzően háttérben (app-indítási prefetch) fordul elő.
-const FETCH_TIMEOUT_MS = 15000;
+const FETCH_TIMEOUT_MS = 8000;
 
-// Marosvásárhely koordinátái
-const API_URL =
+// Marosvásárhely koordinátái. Elsődleges forrás a met.no (stabil, gyors),
+// tartalék az Open-Meteo (2026 júniusában rendszeresen 502-zik / 10+ mp alatt válaszol).
+const METNO_URL =
+  'https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=46.5425&lon=24.5575';
+const OPENMETEO_URL =
   'https://api.open-meteo.com/v1/forecast?latitude=46.5425&longitude=24.5575&current_weather=true';
 
 interface CacheEntry {
@@ -35,7 +35,7 @@ const readCache = (): CacheEntry | null => {
 /** Az utolsó sikeres lekérés eredménye (akár lejárt is) — azonnali megjelenítéshez. */
 export const getCachedWeather = (): WeatherData | null => readCache()?.data ?? null;
 
-const mapWeather = (currentWeather: { temperature: number; weathercode: number }): WeatherData => {
+const mapOpenMeteo = (currentWeather: { temperature: number; weathercode: number }): WeatherData => {
   const code = currentWeather.weathercode;
   let condition = 'Napos';
   let icon = 'ph-sun';
@@ -50,18 +50,43 @@ const mapWeather = (currentWeather: { temperature: number; weathercode: number }
   return { temp: Math.round(currentWeather.temperature), condition, icon };
 };
 
-const fetchOnce = async (): Promise<WeatherData> => {
+// met.no symbol_code (pl. "rainshowers_day", "partlycloudy_night") -> felirat + ikon
+const mapMetNoSymbol = (symbol: string): { condition: string; icon: string } => {
+  if (symbol.includes('thunder')) return { condition: 'Viharos', icon: 'ph-cloud-lightning' };
+  if (symbol.includes('snow') || symbol.includes('sleet')) return { condition: 'Havas', icon: 'ph-cloud-snow' };
+  if (symbol.includes('showers')) return { condition: 'Zápor', icon: 'ph-cloud-rain' };
+  if (symbol.includes('rain') || symbol.includes('drizzle')) return { condition: 'Esős', icon: 'ph-cloud-rain' };
+  if (symbol.includes('fog')) return { condition: 'Ködös', icon: 'ph-cloud-fog' };
+  if (symbol.includes('cloudy') || symbol.includes('fair')) return { condition: 'Részben felhős', icon: 'ph-cloud-sun' };
+  return { condition: 'Napos', icon: 'ph-sun' };
+};
+
+const fetchWithTimeout = async (url: string): Promise<any> => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(API_URL, { signal: controller.signal });
+    const res = await fetch(url, { signal: controller.signal });
     if (!res.ok) throw new Error(`Weather API HTTP ${res.status}`);
-    const data = await res.json();
-    if (!data.current_weather) throw new Error('Weather API: missing current_weather');
-    return mapWeather(data.current_weather);
+    return await res.json();
   } finally {
     clearTimeout(timer);
   }
+};
+
+const fetchFromMetNo = async (): Promise<WeatherData> => {
+  const data = await fetchWithTimeout(METNO_URL);
+  const now = data?.properties?.timeseries?.[0]?.data;
+  const temp = now?.instant?.details?.air_temperature;
+  if (typeof temp !== 'number') throw new Error('met.no: missing temperature');
+  const symbol: string =
+    now?.next_1_hours?.summary?.symbol_code || now?.next_6_hours?.summary?.symbol_code || '';
+  return { temp: Math.round(temp), ...mapMetNoSymbol(symbol) };
+};
+
+const fetchFromOpenMeteo = async (): Promise<WeatherData> => {
+  const data = await fetchWithTimeout(OPENMETEO_URL);
+  if (!data.current_weather) throw new Error('Weather API: missing current_weather');
+  return mapOpenMeteo(data.current_weather);
 };
 
 let inflight: Promise<WeatherData | null> | null = null;
@@ -82,9 +107,9 @@ export const fetchWeather = (): Promise<WeatherData | null> => {
       try {
         let data: WeatherData;
         try {
-          data = await fetchOnce();
+          data = await fetchFromMetNo();
         } catch {
-          data = await fetchOnce(); // egyetlen újrapróbálkozás
+          data = await fetchFromOpenMeteo(); // tartalék-forrás
         }
         try {
           localStorage.setItem(CACHE_KEY, JSON.stringify({ data, fetchedAt: Date.now() }));
