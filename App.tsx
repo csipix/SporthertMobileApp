@@ -10,6 +10,7 @@ import ClassSelector from './components/ClassSelector';
 import { ViewType } from './types';
 import { useModalHistory } from './hooks/useModalHistory';
 import { getNotificationPreferences, saveNotificationPreferences, setupForegroundListener } from './services/notifications';
+import { fetchWeather } from './services/weather';
 
 import { MatchesProvider } from './contexts/MatchesContext';
 
@@ -29,6 +30,8 @@ const App: React.FC = () => {
   useModalHistory(showNotifications, () => setShowNotifications(false));
 
   useEffect(() => {
+    // Időjárás előtöltése, hogy a Hub megnyitásakor már kész legyen
+    fetchWeather();
     const unsubscribe = setupForegroundListener();
     return () => {
       if (unsubscribe) unsubscribe();

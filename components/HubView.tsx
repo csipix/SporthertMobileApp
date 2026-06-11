@@ -6,6 +6,7 @@ import { getSportIcon } from '../utils/sportConfig';
 import { useModalHistory } from '../hooks/useModalHistory';
 import { handleFirestoreError, OperationType } from '../utils/errorHandler';
 import { useMatches } from '../contexts/MatchesContext';
+import { WeatherData, fetchWeather, getCachedWeather } from '../services/weather';
 
 interface LiveMatch {
   id: string;
@@ -43,16 +44,11 @@ interface FairPlayStatus {
   points?: number;
 }
 
-interface WeatherData {
-  temp: number;
-  condition: string;
-  icon: string;
-}
-
 const HubView: React.FC = () => {
   const { matches: allMatches, loading: loadingMatches } = useMatches();
   const [news, setNews] = useState<NewsItem[]>([]);
-  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weather, setWeather] = useState<WeatherData | null>(getCachedWeather());
+  const [weatherFailed, setWeatherFailed] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showGolkiraly, setShowGolkiraly] = useState(false);
   const [showFairPlay, setShowFairPlay] = useState(false);
@@ -83,36 +79,20 @@ const HubView: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch Weather
+  // Fetch Weather (15 perces cache-sel, lásd services/weather.ts)
   useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        // Marosvásárhely coordinates: 46.5425, 24.5575
-        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=46.5425&longitude=24.5575&current_weather=true');
-        const data = await res.json();
-        if (data.current_weather) {
-          const code = data.current_weather.weathercode;
-          let condition = "Napos";
-          let icon = "ph-sun";
-          
-          if (code > 0 && code <= 3) { condition = "Részben felhős"; icon = "ph-cloud-sun"; }
-          else if (code >= 45 && code <= 48) { condition = "Ködös"; icon = "ph-cloud-fog"; }
-          else if (code >= 51 && code <= 67) { condition = "Esős"; icon = "ph-cloud-rain"; }
-          else if (code >= 71 && code <= 77) { condition = "Havas"; icon = "ph-cloud-snow"; }
-          else if (code >= 80 && code <= 82) { condition = "Zápor"; icon = "ph-cloud-rain"; }
-          else if (code >= 95) { condition = "Viharos"; icon = "ph-cloud-lightning"; }
-
-          setWeather({
-            temp: Math.round(data.current_weather.temperature),
-            condition,
-            icon
-          });
-        }
-      } catch (error) {
-        console.error("Weather fetch error:", error);
+    let cancelled = false;
+    fetchWeather().then(data => {
+      if (cancelled) return;
+      if (data) {
+        setWeather(data);
+        setWeatherFailed(false);
+      } else if (!getCachedWeather()) {
+        // se friss adat, se korábbi cache — ne pörögjön örökké a spinner
+        setWeatherFailed(true);
       }
-    };
-    fetchWeather();
+    });
+    return () => { cancelled = true; };
   }, []);
 
   // Fetch News from Firebase
@@ -251,6 +231,8 @@ const HubView: React.FC = () => {
                   <span className="text-[9px] font-bold uppercase text-slate-400 dark:text-gray-500">{weather.condition}</span>
                 </div>
               </>
+            ) : weatherFailed ? (
+              <span className="text-2xl font-black text-slate-300 dark:text-white/20">—</span>
             ) : (
               <div className="w-6 h-6 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin"></div>
             )}
@@ -451,10 +433,7 @@ const HubView: React.FC = () => {
                     <i className="ph ph-bold ph-hourglass-medium text-3xl animate-pulse text-purple-500 dark:text-purple-400"></i>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-700 dark:text-gray-200">A jelölés folyamatban...</p>
-                    <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-2 max-w-[200px] leading-relaxed uppercase font-black tracking-widest">
-                      Hamarosan kiderül, ki kapja az idei Fair Play díjat!
-                    </p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-gray-200">Eredményhirdetés a Sporthét végén.</p>
                   </div>
                 </div>
               )}
