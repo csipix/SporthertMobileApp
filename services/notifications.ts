@@ -59,8 +59,11 @@ export const saveNotificationPreferences = async (prefs: NotificationPrefs): Pro
     
     if (messaging && 'Notification' in window && Notification.permission === 'granted') {
       try {
-        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-        fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
+        // Nem regisztrálunk kézzel: a Firebase maga regisztrálja a
+        // /firebase-messaging-sw.js-t a saját '/firebase-cloud-messaging-push-scope'
+        // scope-ján és megvárja az aktiválódását is. Kézi regisztrálás a '/' scope-on
+        // kilökné a vite-pwa fő service workerét.
+        fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY });
       } catch (e) {
         console.error('Hiba az FCM token lekérésekor:', e);
       }

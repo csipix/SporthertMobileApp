@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => {
           registerType: 'autoUpdate',
           includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'lightbagoly.png', 'feherbagoly.png'],
           manifest: {
+            id: '/',
+            lang: 'hu',
             name: 'Sporthét',
             short_name: 'Sporthét',
             description: 'Sporthét mobilalkalmazás',
