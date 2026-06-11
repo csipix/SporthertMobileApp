@@ -118,7 +118,7 @@ const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersive
   return (
     <div className="relative w-full h-full overflow-hidden transition-colors duration-500 bg-slate-200 dark:bg-[#0d0d12]">
       {/* Header / Vissza gomb */}
-      <div className="absolute top-4 left-4 z-[70] flex items-center pointer-events-none">
+      <div className="absolute top-[calc(env(safe-area-inset-top)+1rem)] left-4 z-[70] flex items-center pointer-events-none">
         <button 
           onClick={() => {
             if (selectedSport) {
@@ -137,7 +137,7 @@ const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersive
 
       {/* Segmented Control */}
       {selectedSport?.toLowerCase() === 'foci' && (
-        <div className="absolute top-4 left-0 right-0 z-[65] flex justify-center pointer-events-none px-16">
+        <div className="absolute top-[calc(env(safe-area-inset-top)+1rem)] left-0 right-0 z-[65] flex justify-center pointer-events-none px-16">
           <div className="pointer-events-auto flex items-center p-1 h-10 bg-white/80 dark:bg-white/10 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl">
             <button
               onClick={() => setActiveTab('groups')}
@@ -172,7 +172,7 @@ const AgakView: React.FC<AgakViewProps> = ({ selectedClass, onClose, onImmersive
 
       {/* Csoportkör Nézet */}
       {selectedSport?.toLowerCase() === 'foci' && activeTab === 'groups' && (
-        <div className="absolute inset-0 z-[60] bg-slate-50 dark:bg-[#0d0d12] overflow-y-auto no-scrollbar pt-24 pb-8 px-4 animate-fadeIn">
+        <div className="absolute inset-0 z-[60] bg-slate-50 dark:bg-[#0d0d12] overflow-y-auto no-scrollbar pt-[calc(env(safe-area-inset-top)+6rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] px-4 animate-fadeIn">
           <div className="max-w-md mx-auto space-y-6">
             {groups.length > 0 ? groups.map(group => (
               <div key={group.name} className="space-y-3">

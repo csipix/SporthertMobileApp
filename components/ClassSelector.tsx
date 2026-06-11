@@ -18,7 +18,7 @@ const ClassSelector: React.FC<ClassSelectorProps> = ({ onSelect }) => {
   });
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col p-4 animate-fadeIn overflow-hidden transition-colors duration-500 bg-[#f1f5f9] dark:bg-[#0d0d12]">
+    <div className="fixed inset-0 z-[200] flex flex-col px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] animate-fadeIn overflow-hidden transition-colors duration-500 bg-[#f1f5f9] dark:bg-[#0d0d12]">
       <div className="mt-2 mb-2 text-center flex-shrink-0">
         <div className="w-14 h-14 rounded-full mx-auto mb-1 flex items-center justify-center overflow-hidden transition-all duration-700 border-2 bg-white dark:bg-[#afde33] border-slate-100 dark:border-white/10 shadow-md dark:shadow-[0_0_15px_rgba(175,222,51,0.3)]">
           <img 

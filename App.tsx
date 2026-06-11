@@ -194,7 +194,7 @@ const App: React.FC = () => {
 
       {/* Notifications Modal */}
       {showNotifications && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-4" onClick={() => window.history.back()}>
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]" onClick={() => window.history.back()}>
           <div 
             className="w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-8 animate-slideUp border bg-white dark:bg-[#16161d] border-slate-200 dark:border-white/10"
             onClick={e => e.stopPropagation()}
