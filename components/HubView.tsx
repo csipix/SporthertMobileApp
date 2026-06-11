@@ -98,13 +98,13 @@ const HubView: React.FC = () => {
   // Fetch News from Firebase
   useEffect(() => {
     if (!db) {
-      setNews([{ id: 'default', title: 'Üdvözöljük!', content: 'A versenyek rendben zajlanak!', createdAt: '', expiresAt: '' }]);
+      setNews([{ id: 'default', title: 'Hírek', content: 'A Sporthét rendben zajlik.', createdAt: '', expiresAt: '' }]);
       return;
     }
     const q = query(collection(db, "news"), orderBy("createdAt", "desc"), limit(1));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (snapshot.empty) {
-        setNews([{ id: 'default', title: 'Üdvözöljük!', content: 'A versenyek rendben zajlanak!', createdAt: '', expiresAt: '' }]);
+        setNews([{ id: 'default', title: 'Hírek', content: 'A Sporthét rendben zajlik.', createdAt: '', expiresAt: '' }]);
       } else {
         const newsData = snapshot.docs.map(doc => ({
           id: doc.id,
