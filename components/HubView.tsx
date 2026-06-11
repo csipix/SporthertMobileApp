@@ -338,10 +338,15 @@ const HubView: React.FC = () => {
               Fair play
             </button>
           </div>
-          <button className="w-full border font-black py-3 rounded-2xl active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 bg-white dark:bg-blue-500/5 border-blue-100 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-sm dark:shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+          <a
+            href="https://docs.google.com/document/d/145CIuxKtYbSS6CW1znsZND186VCBzjNh7ccXc6ENbIY/edit?usp=drivesdk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full border font-black py-3 rounded-2xl active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 bg-white dark:bg-blue-500/5 border-blue-100 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-sm dark:shadow-[0_0_15px_rgba(59,130,246,0.1)]"
+          >
             <i className="ph ph-bold ph-scroll text-lg"></i>
             Házirend & Szabályzat
-          </button>
+          </a>
         </div>
       </div>
 
